@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>E:\Users\strik\source\repos\SnailMailRework\SnailMailClient\Build\</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Terminal.Gui" Version="0.90.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SnailMailLibs\SnailMailLibs.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Build\**\**\" />
+	<Content Include="Build\**\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Build\netcoreapp3.1\Outbox\untitled.png" />
+  </ItemGroup>
+
+</Project>
