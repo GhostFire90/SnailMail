@@ -10,7 +10,7 @@ Basically, this sends files but with a delay that will eventually be configurabl
 
 # Usage 
   - server is pretty self explanitory, port used atm is 9000, auto binds to 0.0.0.0, enter to quit
-  - Client will automatically connect to 127.0.0.1 aka Localhost if not provided with a valid ip in the args ```./SnailMailClient.exe <Your ip here>```
+  - Client will automatically connect to 127.0.0.1 aka Localhost if not provided with a valid ip in the args ```./SnailMailClient.exe <Server ip here>```
   - Client is currently unavaliable with linux
   - Requires .net core 3.1
 
