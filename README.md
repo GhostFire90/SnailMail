@@ -25,5 +25,5 @@ Basically, this sends files but with a delay that will eventually be configurabl
 
 # Credits
   - Binaries used
-    - [https://github.com/migueldeicaza/gui.cs]Terminal.Gui
-    - [https://github.com/JamesNK/Newtonsoft.Json]NewtonSoft.Json
+    - [Terminal.Gui](https://github.com/migueldeicaza/gui.cs) 
+    - [NewtonSoft.Json](https://github.com/JamesNK/Newtonsoft.Json) 
