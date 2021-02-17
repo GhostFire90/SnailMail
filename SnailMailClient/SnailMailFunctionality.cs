@@ -99,7 +99,7 @@ namespace SnailMailClient
                 contentListView.SetSource(fileList);
                 contentListView.CanFocus = true;
                 contentListView.SetFocus();
-
+                //sock.Close();
             }
         }
         protected void RetrieveFile(string fileOption)

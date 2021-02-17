@@ -7,7 +7,7 @@ namespace SnailMailClient
 {
     class SnailMailClient : SnailMailFunctionality
     {
-        public static string ServerIp = "66.235.43.137";
+        public static string ServerIp = "127.0.0.1";
         public static void Main(string[] args)
         {
             if (args.Length > 0 && args[0] != "")

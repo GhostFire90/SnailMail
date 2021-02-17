@@ -53,6 +53,7 @@ namespace SnailMailLibs
             byte[] bytes;
             using (var memStream = new MemoryStream())
             {
+                
                 var bF = new BinaryFormatter();
                 bF.Serialize(memStream, bfs);
                 bytes = memStream.ToArray();
@@ -66,6 +67,7 @@ namespace SnailMailLibs
             {
                 var bF = new BinaryFormatter();
                 memStream.Write(bytes, 0, bytes.Length);
+                System.Diagnostics.Debug.WriteLine(memStream.Length);
                 memStream.Seek(0, SeekOrigin.Begin);
                 ByteFileStructure bfs = (ByteFileStructure)bF.Deserialize(memStream);
                 return bfs;   
