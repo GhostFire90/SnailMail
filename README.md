@@ -22,7 +22,7 @@ Basically, this sends files but with a delay that will eventually be configurabl
  
   - ~~Add config for certain things on both server and client side, like default server ip and changing of port along with time between file recieve~~
 
-  - Add client linux support
+  - ~~Add client linux support~~
 
 # Credits
   - Binaries used
