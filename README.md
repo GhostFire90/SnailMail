@@ -20,7 +20,9 @@ Basically, this sends files but with a delay that will eventually be configurabl
 
 # Todo
  
-  - Add config for certain things on both server and client side, like default server ip and changing of port along with time between file recieve 
+  - ~~Add config for certain things on both server and client side, like default server ip and changing of port along with time between file recieve ~~
+    - Added port options for server and delay
+    - added default ip and port for client
   - Add client linux support
 
 # Credits
