@@ -56,7 +56,7 @@ namespace SnailMailClient
                 ipSender = IPAddress.Parse(ip)
             };
             byte[] buffer = FileEncoding.StreamPrepper(fs);
-            var endpoint = new IPEndPoint(IPAddress.Parse(SnailMailClient.ServerIp), 9000);
+            var endpoint = new IPEndPoint(IPAddress.Parse(SnailMailClient.ServerIp), SnailMailClient.ServerPort);
             var sock = new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             
             sock.Connect(endpoint);
@@ -70,7 +70,7 @@ namespace SnailMailClient
             contentListView.OpenSelectedItem -= current_mode;
             current_mode = (a) => RetrieveFile(a.Value.ToString());
             contentListView.OpenSelectedItem += current_mode;
-            var endpoint = new IPEndPoint(IPAddress.Parse(SnailMailClient.ServerIp), 9000);
+            var endpoint = new IPEndPoint(IPAddress.Parse(SnailMailClient.ServerIp), SnailMailClient.ServerPort);
             var sock = new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             sock.Connect(endpoint);
 
@@ -84,6 +84,7 @@ namespace SnailMailClient
             {
                 contentLabel.Text = "You have no waiting Messages";
                 ns.Close();
+                
 
             }
             else if(BitConverter.ToInt32(youHaveMail) == 0)
@@ -104,7 +105,7 @@ namespace SnailMailClient
         }
         protected void RetrieveFile(string fileOption)
         {
-            var endpoint = new IPEndPoint(IPAddress.Parse(SnailMailClient.ServerIp), 9000);
+            var endpoint = new IPEndPoint(IPAddress.Parse(SnailMailClient.ServerIp), SnailMailClient.ServerPort);
             var sock = new Socket(endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
             sock.Connect(endpoint);
 

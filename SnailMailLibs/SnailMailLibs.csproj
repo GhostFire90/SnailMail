@@ -50,6 +50,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfigStructs.cs" />
     <Compile Include="ExtendedSerializerExtensions.cs" />
     <Compile Include="FileEncoding.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

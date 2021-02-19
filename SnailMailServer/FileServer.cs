@@ -93,7 +93,7 @@ namespace SnailMailServer
                         foreach(KeyValuePair<string, string> entry in fileList)
                         {
                             
-                            DateTime endTime = DateTime.Parse(entry.Value)/*.AddDays(7)*/;
+                            DateTime endTime = DateTime.Parse(entry.Value).AddDays(SnailMailServer.days_delayed);
                             TimeSpan ts = endTime.Subtract(DateTime.UtcNow);
                             if(ts.CompareTo(TimeSpan.Zero) > 0)
                             {
