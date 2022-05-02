@@ -9,28 +9,55 @@ using Newtonsoft.Json;
 
 using Terminal.Gui;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace SnailMail_Client
 {
     class Client
     {
-        static void sending(ListViewItemEventArgs args, SnailMailClient client)
+        static async void sending(ListViewItemEventArgs args, SnailMailClient client)
         {
             OpenDialog dialog = new OpenDialog("Open a file", "Select a file");
-
+            ManualResetEvent done = new ManualResetEvent(false);
             Application.Run(dialog);
-            if (!dialog.Canceled)
+            ProgressBar progressBar = new ProgressBar()
             {
+                Width = 20,
+                Height = 3,
+                X = Pos.Center(),
+                Y = Pos.Center(),
+
+            };
+            Progress<float> progress = new Progress<float>((float a) => Task.Run(() => { progressBar.Fraction = a; }));
+            await Task.Run(() =>
+            {
+                if (!dialog.Canceled)
+                {
 
 
-                string[] paths = dialog.FilePaths[0].Split('\\');
-                string ip = args.Value.ToString();
+                    string[] paths = dialog.FilePaths[0].Split('\\');
+                    string ip = args.Value.ToString();
+
+
+
+                    done.Reset();
+                    Task t = client.Send(dialog.FilePaths[0], ip, progress, done);
+                    Application.Top.Add(progressBar);
+                    progressBar.SetFocus();
+                    done.WaitOne();
+
+                                  
+                }
+
                 
-                client.Send(paths[paths.Length-1], ip);
-
-            }
+            });
+            Application.Top.Remove(progressBar);
             MessageBox.Query("", "File Sent Successfully", "Ok");
+
         }
+
+        
+
         static void recieving(ListViewItemEventArgs args, SnailMailClient client)
         {
             string dir = client.IpAsString();
@@ -67,7 +94,7 @@ namespace SnailMail_Client
                         if (!addresses.Contains(input))
                         {
                             stream.WriteLine(input);
-                            MessageBox.Query("", $"{input} Added successfully");
+                            MessageBox.Query("", $"{input} Added successfully", "Ok");
                         }
                         else
                         {

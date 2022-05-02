@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using BetterFileProtocol;
 using System.Threading.Tasks;
+using System.Threading;
 
 namespace SnailMailProtocol
 {
@@ -153,6 +154,66 @@ namespace SnailMailProtocol
             File.Delete(path + ".crp");
 
 
+        }
+        public async Task Send(string path, string reciever, IProgress<float> progress, ManualResetEvent done)
+        {
+            stream.Write(BitConverter.GetBytes((int)ServerCodes.ClientSend));
+            string dir = $".keys/{reciever}/";
+            if (!Directory.Exists(".keys")) Directory.CreateDirectory(".keys");
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
+            stream.Write(BitConverter.GetBytes(reciever.Length));
+            stream.Write(Encoding.UTF8.GetBytes(reciever));
+
+            BFTP.Recieve(stream, 256, dir);
+
+            Aes aes = Aes.Create();
+            ICryptoTransform transform = aes.CreateEncryptor();
+
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
+            FileStream keyStream = File.OpenRead($"{dir}public.key");
+
+            byte[] keyBuffer = new byte[keyStream.Length];
+            keyStream.Read(keyBuffer, 0, keyBuffer.Length);
+
+            rsa.ImportRSAPublicKey(keyBuffer, out _);
+            keyStream.Close();
+
+            byte[] ivLenghth = BitConverter.GetBytes(aes.IV.Length);
+            byte[] iv = aes.IV;
+
+            byte[] keyEncrypted = rsa.Encrypt(aes.Key, false);
+            byte[] keyLength = BitConverter.GetBytes(keyEncrypted.Length);
+
+            using (FileStream copy = File.Open(path + ".crp", FileMode.OpenOrCreate))
+            {
+                copy.Write(ivLenghth);
+                copy.Write(iv);
+
+                copy.Write(keyLength);
+                copy.Write(keyEncrypted);
+
+                using (CryptoStream copyEncrypted = new CryptoStream(copy, transform, CryptoStreamMode.Write))
+                {
+                    // = chunkSize;
+
+                    byte[] buffer = new byte[aes.BlockSize];
+                    int bytesRead = 0;
+
+                    using (FileStream inFs = File.OpenRead(path))
+                    {
+                        while ((bytesRead = inFs.Read(buffer, 0, aes.BlockSize)) != 0)
+                        {
+                            copyEncrypted.Write(buffer, 0, bytesRead);
+                        }
+                    }
+                    copyEncrypted.FlushFinalBlock();
+                }
+
+            }
+            await Task.Run(() => BFTP.Send(stream, path + ".crp", 256, progress)).ConfigureAwait(false);
+            done.Set();
+            File.Delete(path + ".crp");
         }
         
 
