@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <Reference Include="BFTP">
-      <HintPath>..\..\..\..\Documents\GitHub\BetterFileProtocol\BFTP\bin\Debug\net5.0\BFTP.dll</HintPath>
+      <HintPath>libs\BFTP.dll</HintPath>
     </Reference>
   </ItemGroup>
 
