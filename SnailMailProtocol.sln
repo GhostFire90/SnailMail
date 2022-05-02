@@ -5,11 +5,9 @@ VisualStudioVersion = 16.0.31624.102
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SnailMailProtocol", "SnailMailProtocol\SnailMailProtocol.csproj", "{FFC17F4F-39CE-43F6-BAEC-CA7F864DC681}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BFTP", "..\BetterFileProtocol\BFTP\BFTP.csproj", "{8E2C92A1-1A6A-47AB-BCCC-46A4B3667DF1}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SnailMail-Client", "SnailMail-Client\SnailMail-Client.csproj", "{55763574-6B8E-4568-B16C-0FD478CD070F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SnailMail-Server", "SnailMail-Server\SnailMail-Server.csproj", "{FB1E0F72-1E31-4FD4-B05F-8BB4FFAA8CCB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SnailMail-Server", "SnailMail-Server\SnailMail-Server.csproj", "{FB1E0F72-1E31-4FD4-B05F-8BB4FFAA8CCB}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +19,6 @@ Global
 		{FFC17F4F-39CE-43F6-BAEC-CA7F864DC681}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFC17F4F-39CE-43F6-BAEC-CA7F864DC681}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFC17F4F-39CE-43F6-BAEC-CA7F864DC681}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8E2C92A1-1A6A-47AB-BCCC-46A4B3667DF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8E2C92A1-1A6A-47AB-BCCC-46A4B3667DF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8E2C92A1-1A6A-47AB-BCCC-46A4B3667DF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8E2C92A1-1A6A-47AB-BCCC-46A4B3667DF1}.Release|Any CPU.Build.0 = Release|Any CPU
 		{55763574-6B8E-4568-B16C-0FD478CD070F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{55763574-6B8E-4568-B16C-0FD478CD070F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55763574-6B8E-4568-B16C-0FD478CD070F}.Release|Any CPU.ActiveCfg = Release|Any CPU
