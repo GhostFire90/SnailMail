@@ -32,3 +32,4 @@ Both the server and client automatically generate a config file with the neccesa
   - Binaries used
     - [Terminal.Gui](https://github.com/migueldeicaza/gui.cs) 
     - [NewtonSoft.Json](https://github.com/JamesNK/Newtonsoft.Json) 
+    - [BetterFileProtocol](https://github.com/GhostFire90/BetterFileProtocol)
