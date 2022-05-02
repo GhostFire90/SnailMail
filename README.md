@@ -9,15 +9,11 @@ This is my first project with sockets programming and just networking in general
 Basically, this sends files but with a delay that will eventually be configurable on the servers end. Adds a bit more importance to your messages as the person on the other end will not be able to read it for a few days.
 
 # Usage 
-  - server is pretty self explanitory, port used atm is 9000, auto binds to 0.0.0.0, enter to quit
-  - Client will automatically connect to 127.0.0.1 aka Localhost if not provided with a valid ip in the args ```./SnailMailClient.exe <Server ip here>```
-  - ~~Client is currently unavaliable with linux~~
-  - ~~Requires .net core 3.1~~ 
-  - Client now built for windows x64 and x86 as well as linux, built into onefile and with included needed binaries
+
 
 # Issues
 
-  - Random binaryFormatter fails over network instead of local 
+
 
 # Todo
  
