@@ -1,4 +1,4 @@
-# SnailMail
+# SnailMail [![CodeQL](https://github.com/GhostFire90/SnailMail/actions/workflows/codeql.yml/badge.svg)](https://github.com/GhostFire90/SnailMail/actions/workflows/codeql.yml)
 Snail mail is a project idea I had when I was craving something more old fassioned, something in the terminal yet still pleasing to look at to a degree, That was the original thought. Then I thought about how I felt weird giving my address out to people on the internet to be pen pals with so I thought "Lets make email but with, extra steps"
 This is my first project with sockets programming and just networking in general so if you catch bugs, please let me know and if you have advice on how to make it better, that is also very helpful!
 
