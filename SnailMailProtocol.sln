@@ -9,8 +9,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SnailMail-Client", "SnailMa
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SnailMail-Server", "SnailMail-Server\SnailMail-Server.csproj", "{FB1E0F72-1E31-4FD4-B05F-8BB4FFAA8CCB}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BFTP", "..\..\..\Documents\GitHub\BetterFileProtocol\BFTP\BFTP.csproj", "{C5965678-856B-4534-8C07-98CF212E9BBE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,10 +27,6 @@ Global
 		{FB1E0F72-1E31-4FD4-B05F-8BB4FFAA8CCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB1E0F72-1E31-4FD4-B05F-8BB4FFAA8CCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FB1E0F72-1E31-4FD4-B05F-8BB4FFAA8CCB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C5965678-856B-4534-8C07-98CF212E9BBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C5965678-856B-4534-8C07-98CF212E9BBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C5965678-856B-4534-8C07-98CF212E9BBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C5965678-856B-4534-8C07-98CF212E9BBE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
