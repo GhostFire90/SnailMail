@@ -8,9 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="BFTP">
-      <HintPath>libs\BFTP.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\..\..\Documents\GitHub\BetterFileProtocol\BFTP\BFTP.csproj" />
   </ItemGroup>
 
 </Project>

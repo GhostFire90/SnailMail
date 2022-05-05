@@ -15,48 +15,77 @@ namespace SnailMail_Client
 {
     class Client
     {
-        static async void sending(ListViewItemEventArgs args, SnailMailClient client)
+        static ProgressBar progressBar;
+        static async Task sending(ListViewItemEventArgs args, SnailMailClient client)
         {
             OpenDialog dialog = new OpenDialog("Open a file", "Select a file");
-            ManualResetEvent done = new ManualResetEvent(false);
+
             Application.Run(dialog);
-            ProgressBar progressBar = new ProgressBar()
+            progressBar = new ProgressBar()
             {
                 Width = 20,
-                Height = 3,
+                Height = 10,
                 X = Pos.Center(),
                 Y = Pos.Center(),
 
             };
-            Progress<float> progress = new Progress<float>((float a) => Task.Run(() => { progressBar.Fraction = a; }));
-            await Task.Run(() =>
+            
+            Progress<float> progress = new Progress<float>((float a) =>
+            {
+                Application.MainLoop.Invoke(() => progressBar.Fraction = a);
+            });
+            await Task.Run(async () =>
             {
                 if (!dialog.Canceled)
                 {
 
-
+                    
                     string[] paths = dialog.FilePaths[0].Split('\\');
                     string ip = args.Value.ToString();
 
 
 
-                    done.Reset();
-                    Task t = client.Send(dialog.FilePaths[0], ip, progress, done);
-                    Application.Top.Add(progressBar);
+                    Application.MainLoop.Invoke(() => Application.Top.Add(progressBar));
+                    
                     progressBar.SetFocus();
-                    done.WaitOne();
-
+                    await client.Send(dialog.FilePaths[0], ip, progress, noKey);
+                    
+                    //while (progressBar.Fraction < 1) ;
+                    Application.MainLoop.Invoke(() => Application.Top.Remove(progressBar));
                                   
                 }
 
                 
             });
-            Application.Top.Remove(progressBar);
+            
             MessageBox.Query("", "File Sent Successfully", "Ok");
+            
 
         }
 
-        
+        public static async Task<bool> noKey()
+        {
+            bool t = await Task.Run(() =>
+            {
+                ManualResetEvent done = new ManualResetEvent(false);
+                int i = 0;
+                Application.MainLoop.Invoke(() =>
+                {
+                    
+                    i = MessageBox.Query("No Encryption", "The recipient has not provided an encryption key, would you like to send unencrypted?", "Yes", "No");
+                    done.Set();
+                });
+                done.WaitOne();
+                return i == 0;
+            });
+            return t;
+            /*int a = MessageBox.Query("No Encryption", "The recipient has not provided an encryption key, would you like to send unencrypted?", "Yes", "No"); 
+            
+
+
+            return a == 0;*/
+        }
+
 
         static void recieving(ListViewItemEventArgs args, SnailMailClient client)
         {
@@ -219,7 +248,7 @@ namespace SnailMail_Client
                 Height = Content.Height-10
             };
 
-            ipList.OpenSelectedItem += (args) => sending(args, client);         
+            ipList.OpenSelectedItem += async (args) => await sending(args, client);         
 
             TabView.Tab Send = new TabView.Tab("Send", ipList);
             Content.AddTab(Send, false);

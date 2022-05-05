@@ -52,20 +52,18 @@ namespace SnailMailProtocol
 
             if (File.Exists(dir + "/public.key"))
             {
-                stream.Write(BitConverter.GetBytes((int)HandshakeCodes.ServerHasKey)); //0 means they have the public key
+                SMHelpers.SendHCode(stream, HandshakeCodes.ServerHasKey); //0 means they have the public key
 
-                byte[] buff = new byte[4];
-                stream.Read(buff, 0, 4);
-
-                int code = BitConverter.ToInt32(buff);
-                if (code == 1)
+                HandshakeCodes code = SMHelpers.ReceiveHCode(stream);
+                
+                if (code == HandshakeCodes.KeyCreated)
                 {
                     BFTP.Recieve(stream, 256, dir + '/');
                 }
             }
             else
             {
-                stream.Write(BitConverter.GetBytes((int)HandshakeCodes.ServerDoesntHaveKey)); //1 means they do not
+                SMHelpers.SendHCode(stream, HandshakeCodes.ServerDoesntHaveKey); //1 means they do not
 
                 BFTP.Recieve(stream, 256, dir + '/');
 
@@ -88,8 +86,32 @@ namespace SnailMailProtocol
 
             string inbox = Encoding.UTF8.GetString(inboxBuffer);
 
-            BFTP.Send(stream, $"{inbox}/public.key");
-            string exitDir = BFTP.Recieve(stream, 256, $"{inbox}/");
+            if (File.Exists($"{inbox}/public.key"))
+            {
+                SMHelpers.SendOCode(stream, OperationCodes.YesKey);
+                //stream.Write(BitConverter.GetBytes((int)OperationCodes.YesKey));
+                BFTP.Send(stream, $"{inbox}/public.key");
+                BFTP.Recieve(stream, 256, $"{inbox}/");
+            }
+            else
+            {
+                SMHelpers.SendOCode(stream, OperationCodes.NoKey);
+                OperationCodes code = SMHelpers.ReceiveOCode(stream);
+                if (code == OperationCodes.AbortSend)
+                {
+                    return;
+                }
+                else if (code == OperationCodes.ContinueSend)
+                {
+                    string exitDir = BFTP.Recieve(stream, 256, $"{inbox}/");
+                }
+                else
+                {
+                    throw new Exception("Unknown code for this operation");
+                }
+            }
+            
+            
 
         }
 
@@ -111,20 +133,30 @@ namespace SnailMailProtocol
             stream.Read(fileNameBytes);
 
             string fileName = Encoding.UTF8.GetString(fileNameBytes);
+            FileInfo fileInfo;
+            if (File.Exists($"{dir}{fileName}"))
+            {
+                stream.Write(BitConverter.GetBytes((int)OperationCodes.NoKey));
+                fileInfo = new FileInfo($"{dir}{fileName}");
 
-            FileInfo fileInfo = new FileInfo($"{dir}{fileName}.crp");
+            }
+            else
+            {
+                stream.Write(BitConverter.GetBytes((int)OperationCodes.NoKey));
+                fileInfo = new FileInfo($"{dir}{fileName}.crp");
+            }
+
+             
             fileInfo.Refresh();
             DateTime creation = fileInfo.LastWriteTime;
 
             TimeSpan howLong = DateTime.Now.Subtract(creation);
             if (howLong.TotalDays >= days)
             {
-                stream.Write(BitConverter.GetBytes((int)OperationCodes.WaitTimeOver));
-            }
+                SMHelpers.SendOCode(stream, OperationCodes.WaitTimeOver);            }
             else
             {
-                stream.Write(BitConverter.GetBytes((int)OperationCodes.WaitTime));
-
+                SMHelpers.SendOCode(stream, OperationCodes.WaitTime);
                 string ready = creation.AddDays(7).ToString("MM/dd/yyyy");
 
                 byte[] timeBuffer = Encoding.UTF8.GetBytes(ready);
@@ -134,15 +166,21 @@ namespace SnailMailProtocol
                 stream.Write(timeBuffer);
                 return;
             }
+            
 
             if (File.Exists($"{dir}{fileName}.crp"))
             {
-                stream.Write(BitConverter.GetBytes((int)OperationCodes.FileDoesExist));
+                SMHelpers.SendOCode(stream, OperationCodes.FileDoesExist);
                 BFTP.Send(stream, $"{dir}{fileName}.crp");
+            }
+            else if (File.Exists($"{dir}{fileName}"))
+            {
+                SMHelpers.SendOCode(stream, OperationCodes.FileDoesExist);
+                BFTP.Send(stream, $"{dir}{fileName}");
             }
             else
             {
-                stream.Write(BitConverter.GetBytes((int)OperationCodes.FileDoesntExist));
+                SMHelpers.SendOCode(stream, OperationCodes.FileDoesntExist);
                 return;
             }
 
@@ -185,8 +223,8 @@ namespace SnailMailProtocol
                 {
                     nameTrimmed = name.Split("/")[1]; 
                 }
-                
-                nameTrimmed = nameTrimmed.Substring(0, nameTrimmed.Length - 4);
+
+                nameTrimmed = nameTrimmed.Replace(".crp", "");
 
                 int nameLength = nameTrimmed.Length;
                 byte[] nameLengthBytes = BitConverter.GetBytes(nameLength);
@@ -262,9 +300,7 @@ namespace SnailMailProtocol
             {
                 try
                 {
-                    byte[] codeBuffer = new byte[4];
-                    stream.Read(codeBuffer);
-                    ServerCodes code = (ServerCodes)BitConverter.ToInt32(codeBuffer);
+                    ServerCodes code = SMHelpers.ReceiveSCode(stream);
                     switch (code)
                     {
                         case ServerCodes.ClientSend:

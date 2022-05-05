@@ -39,7 +39,7 @@ namespace SnailMailProtocol
         /// </summary>
         public void Disconnect()
         {
-            stream.Write(BitConverter.GetBytes((int)ServerCodes.ClientDisconnect));
+            SMHelpers.SendSCode(stream, ServerCodes.ClientDisconnect);
             client.Close();
         }
 
@@ -66,11 +66,10 @@ namespace SnailMailProtocol
                 keyCreated = true;
             }
 
-            byte[] buff = new byte[4];
-            stream.Read(buff, 0, 4);
-            int code = BitConverter.ToInt32(buff);
+            HandshakeCodes code = SMHelpers.ReceiveHCode(stream);
 
-            if (code == (int)HandshakeCodes.ServerDoesntHaveKey)
+
+            if (code == HandshakeCodes.ServerDoesntHaveKey)
             {
 
                 BFTP.Send(stream, "public.key");
@@ -78,12 +77,12 @@ namespace SnailMailProtocol
             }
             else if (keyCreated)
             {
-                stream.Write(BitConverter.GetBytes(1));
+                SMHelpers.SendHCode(stream, HandshakeCodes.KeyCreated);
                 BFTP.Send(stream, "public.key");
             }
             else
             {
-                stream.Write(BitConverter.GetBytes(0));
+                SMHelpers.SendHCode(stream, HandshakeCodes.ServerHasKey);
             }
 
         }
@@ -95,8 +94,8 @@ namespace SnailMailProtocol
         /// <param name="reciever">IP of the recipient</param>
         public void Send(string path, string reciever)
         {
-
-            stream.Write(BitConverter.GetBytes((int)ServerCodes.ClientSend));
+            SMHelpers.SendSCode(stream, ServerCodes.ClientSend);
+            //stream.Write(BitConverter.GetBytes((int)ServerCodes.ClientSend));
             string dir = $".keys/{reciever}/";
             if (!Directory.Exists(".keys")) Directory.CreateDirectory(".keys");
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
@@ -155,9 +154,10 @@ namespace SnailMailProtocol
 
 
         }
-        public async Task Send(string path, string reciever, IProgress<float> progress, ManualResetEvent done)
+        public delegate Task<bool> NoKey();
+        public async Task Send(string path, string reciever, IProgress<float> progress, NoKey noKey)
         {
-            stream.Write(BitConverter.GetBytes((int)ServerCodes.ClientSend));
+            SMHelpers.SendSCode(stream, ServerCodes.ClientSend);
             string dir = $".keys/{reciever}/";
             if (!Directory.Exists(".keys")) Directory.CreateDirectory(".keys");
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
@@ -165,55 +165,82 @@ namespace SnailMailProtocol
             stream.Write(BitConverter.GetBytes(reciever.Length));
             stream.Write(Encoding.UTF8.GetBytes(reciever));
 
-            BFTP.Recieve(stream, 256, dir);
+            OperationCodes code = SMHelpers.ReceiveOCode(stream);
 
-            Aes aes = Aes.Create();
-            ICryptoTransform transform = aes.CreateEncryptor();
-
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
-            FileStream keyStream = File.OpenRead($"{dir}public.key");
-
-            byte[] keyBuffer = new byte[keyStream.Length];
-            keyStream.Read(keyBuffer, 0, keyBuffer.Length);
-
-            rsa.ImportRSAPublicKey(keyBuffer, out _);
-            keyStream.Close();
-
-            byte[] ivLenghth = BitConverter.GetBytes(aes.IV.Length);
-            byte[] iv = aes.IV;
-
-            byte[] keyEncrypted = rsa.Encrypt(aes.Key, false);
-            byte[] keyLength = BitConverter.GetBytes(keyEncrypted.Length);
-
-            using (FileStream copy = File.Open(path + ".crp", FileMode.OpenOrCreate))
+            Progress<float> progress1 = new((float value) =>
             {
-                copy.Write(ivLenghth);
-                copy.Write(iv);
+                progress.Report(value);
+            });
 
-                copy.Write(keyLength);
-                copy.Write(keyEncrypted);
-
-                using (CryptoStream copyEncrypted = new CryptoStream(copy, transform, CryptoStreamMode.Write))
+            bool cont = false;
+            bool trigger = await noKey();
+            if(code == OperationCodes.NoKey)
+            {
+                cont = (trigger);
+                if (cont)
                 {
-                    // = chunkSize;
-
-                    byte[] buffer = new byte[aes.BlockSize];
-                    int bytesRead = 0;
-
-                    using (FileStream inFs = File.OpenRead(path))
-                    {
-                        while ((bytesRead = inFs.Read(buffer, 0, aes.BlockSize)) != 0)
-                        {
-                            copyEncrypted.Write(buffer, 0, bytesRead);
-                        }
-                    }
-                    copyEncrypted.FlushFinalBlock();
+                    SMHelpers.SendOCode(stream, OperationCodes.ContinueSend);
+                    await BFTP.Send(stream, path, 256, progress1);
                 }
-
+                else
+                {
+                    SMHelpers.SendOCode(stream, OperationCodes.AbortSend);
+                    return;
+                }
             }
-            await Task.Run(() => BFTP.Send(stream, path + ".crp", 256, progress)).ConfigureAwait(false);
-            done.Set();
-            File.Delete(path + ".crp");
+            else
+            {
+                BFTP.Recieve(stream, 256, dir);
+
+                Aes aes = Aes.Create();
+                ICryptoTransform transform = aes.CreateEncryptor();
+
+                RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
+                FileStream keyStream = File.OpenRead($"{dir}public.key");
+
+                byte[] keyBuffer = new byte[keyStream.Length];
+                keyStream.Read(keyBuffer, 0, keyBuffer.Length);
+
+                rsa.ImportRSAPublicKey(keyBuffer, out _);
+                keyStream.Close();
+
+                byte[] ivLenghth = BitConverter.GetBytes(aes.IV.Length);
+                byte[] iv = aes.IV;
+
+                byte[] keyEncrypted = rsa.Encrypt(aes.Key, true);
+                byte[] keyLength = BitConverter.GetBytes(keyEncrypted.Length);
+
+                using (FileStream copy = File.Open(path + ".crp", FileMode.OpenOrCreate))
+                {
+                    copy.Write(ivLenghth);
+                    copy.Write(iv);
+
+                    copy.Write(keyLength);
+                    copy.Write(keyEncrypted);
+
+                    using (CryptoStream copyEncrypted = new CryptoStream(copy, transform, CryptoStreamMode.Write))
+                    {
+                        // = chunkSize;
+
+                        byte[] buffer = new byte[aes.BlockSize];
+                        int bytesRead = 0;
+
+                        using (FileStream inFs = File.OpenRead(path))
+                        {
+                            while ((bytesRead = inFs.Read(buffer, 0, aes.BlockSize)) != 0)
+                            {
+                                copyEncrypted.Write(buffer, 0, bytesRead);
+                            }
+                        }
+                        copyEncrypted.FlushFinalBlock();
+                    }
+
+                }
+                await BFTP.Send(stream, path + ".crp", 256, progress1);
+                
+                File.Delete(path + ".crp");
+            }
+            
         }
         
 
@@ -223,7 +250,7 @@ namespace SnailMailProtocol
         /// <param name="fileName">The name of the file wished to be recieved</param>
         public string Recieve(string fileName)
         {
-            stream.Write(BitConverter.GetBytes((int)ServerCodes.ClientRecieve));
+            SMHelpers.SendSCode(stream, ServerCodes.ClientRecieve);
             if (!Directory.Exists("inbox")) Directory.CreateDirectory("inbox");
             byte[] nameLength = BitConverter.GetBytes(fileName.Length);
             byte[] name = Encoding.UTF8.GetBytes(fileName);
@@ -231,12 +258,13 @@ namespace SnailMailProtocol
             stream.Write(nameLength);
             stream.Write(name);
 
-            byte[] code = new byte[4];
-            stream.Read(code);
+
+            OperationCodes code = SMHelpers.ReceiveOCode(stream);
+
             string exitDir = "";
 
-            if (BitConverter.ToInt32(code) == (int)OperationCodes.WaitTimeOver) ;
-            else if (BitConverter.ToInt32(code) == (int)OperationCodes.WaitTime)
+            if (code == OperationCodes.WaitTimeOver) ;
+            else if (code == OperationCodes.WaitTime)
             {
                 byte[] timeLength = new byte[4];
                 stream.Read(timeLength);
@@ -253,13 +281,13 @@ namespace SnailMailProtocol
                 throw new Exception("Unknown code for this opperation");
             }
 
-            stream.Read(code);
+            code = SMHelpers.ReceiveOCode(stream);
 
-            if (BitConverter.ToInt32(code) == (int)OperationCodes.FileDoesExist)
+            if (code == OperationCodes.FileDoesExist)
             {
                 exitDir = BFTP.Recieve(stream, 256, "inbox/");
             }
-            else if (BitConverter.ToInt32(code) == (int)OperationCodes.FileDoesntExist)
+            else if (code == OperationCodes.FileDoesntExist)
             {
                 return $"{fileName} Does not exist on this server";
             }
@@ -293,7 +321,7 @@ namespace SnailMailProtocol
                 byte[] keyEncrypted = new byte[BitConverter.ToInt32(keyLength)];
                 inFs.Read(keyEncrypted, 0, keyEncrypted.Length);
 
-                byte[] keyDecrypted = rsa.Decrypt(keyEncrypted, false);
+                byte[] keyDecrypted = rsa.Decrypt(keyEncrypted, true);
 
                 Aes aes = Aes.Create();
 
@@ -332,7 +360,7 @@ namespace SnailMailProtocol
         /// <returns>list of file names</returns>
         public string[] RequestInbox()
         {
-            stream.Write(BitConverter.GetBytes((int)ServerCodes.ClientRequestInbox));
+            SMHelpers.SendSCode(stream, ServerCodes.ClientRequestInbox);
 
             byte[] namesCountBytes = new byte[4];
             stream.Read(namesCountBytes);
