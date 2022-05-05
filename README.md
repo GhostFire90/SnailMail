@@ -20,13 +20,12 @@ Both the server and client automatically generate a config file with the neccesa
 
 
 # Issues
-- recipients not having connected to the server yet is currently unhandled and will cause a crash on server end, this is because the public key requested by the client will not exist, the plan is to add a system to instead send the file un-encrypted
 - client hasnt been setup to handle the server closing yet
 
 
 # Todo
  - fix previous issues
- - add a progress bar to the send so the program doesnt just freeze until the full file is sent
+
 
 # Credits
   - Binaries used
