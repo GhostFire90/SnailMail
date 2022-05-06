@@ -37,8 +37,8 @@ jobs:
         dotnet publish  -c Release -r linux-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
     - name: Zip Artifacts
       run: |
-        zip SnailMail_Win(x64).zip SnailMail-Server/bin/Release/win-x64/publish/SnailMail-Server.exe SnailMail-Client/bin/Release/win-x64/publish/SnailMail-Client.exe
-        zip SnailMail_Linux(x64).zip SnailMail-Server/bin/Release/linux-x64/publish/SnailMail-Server SnailMail-Client/bin/Release/linux-x64/publish/SnailMail-Client
+        zip SnailMail_Win_x64.zip SnailMail-Server/bin/Release/win-x64/publish/SnailMail-Server.exe SnailMail-Client/bin/Release/win-x64/publish/SnailMail-Client.exe
+        zip SnailMail_Linux_x64.zip SnailMail-Server/bin/Release/linux-x64/publish/SnailMail-Server SnailMail-Client/bin/Release/linux-x64/publish/SnailMail-Client
     - name: release
       uses: ncipollo/release-action@v1
       with: 
