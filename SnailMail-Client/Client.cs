@@ -43,8 +43,6 @@ namespace SnailMail_Client
                     string[] paths = dialog.FilePaths[0].Split('\\');
                     string ip = args.Value.ToString();
 
-
-
                     Application.MainLoop.Invoke(() => Application.Top.Add(progressBar));
                     
                     progressBar.SetFocus();
