@@ -28,5 +28,11 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
     - name: publish
-      run: dotnet publish  -r win-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
-      
+      run: |
+        cd SnailMail-Client
+        dotnet publish  -r win-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
+        dotnet publish  -r linux-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
+        cd ../SnailMail-Server
+        dotnet publish  -r win-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
+        dotnet publish  -r linux-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
+        
