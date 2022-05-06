@@ -40,7 +40,7 @@ jobs:
         zip SnailMail_Win(x64).zip SnailMail-Server/bin/Release/win-x64/publish/SnailMail-Server.exe SnailMail-Client/bin/Release/win-x64/publish/SnailMail-Client.exe
         zip SnailMail_Linux(x64).zip SnailMail-Server/bin/Release/linux-x64/publish/SnailMail-Server SnailMail-Client/bin/Release/linux-x64/publish/SnailMail-Client
     - name: release
-    - uses: ncipollo/release-action@v1
+      uses: ncipollo/release-action@v1
       with: 
         artifacts: "*.zip"
         token: ${{ secrets.GITHUB_TOKEN }}
