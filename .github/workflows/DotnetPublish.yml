@@ -30,9 +30,30 @@ jobs:
     - name: publish
       run: |
         cd SnailMail-Client
-        dotnet publish  -r win-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
-        dotnet publish  -r linux-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
+        dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
+        dotnet publish  -c Release -r linux-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
         cd ../SnailMail-Server
-        dotnet publish  -r win-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
-        dotnet publish  -r linux-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
+        dotnet publish  -c Release -r win-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
+        dotnet publish  -c Release -r linux-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
+    - name: Zip Artifacts
+      run: |
+        zip SnailMail_Win(x64).zip SnailMail-Server/bin/Release/win-x64/publish/SnailMail-Server.exe SnailMail-Client/bin/Release/win-x64/publish/SnailMail-Client.exe
+        zip SnailMail_Linux(x64).zip SnailMail-Server/bin/Release/linux-x64/publish/SnailMail-Server SnailMail-Client/bin/Release/linux-x64/publish/SnailMail-Client
+    - uses: actions/checkout@v2
+    - name: release
+    - uses: ncipollo/release-action@v1
+      with: 
+        artifacts: "*.zip"
+        token: ${{ secrets.GITHUB_TOKEN }}
+   
+    
+    
+    
+    
+    
+    
+    
+    
+    
+      
         
