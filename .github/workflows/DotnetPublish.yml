@@ -35,6 +35,7 @@ jobs:
         cd ../SnailMail-Server
         dotnet publish  -c Release -r win-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
         dotnet publish  -c Release -r linux-x64 -p:PublishSingleFile=true -p:IncludeAllContentForSelfExtract=true --self-contained true
+        cd ../
     - name: Zip Artifacts
       run: |
         zip SnailMail_Win_x64.zip SnailMail-Server/bin/Release/win-x64/publish/SnailMail-Server.exe SnailMail-Client/bin/Release/win-x64/publish/SnailMail-Client.exe
