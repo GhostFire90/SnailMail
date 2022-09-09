@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
 using System.Collections;
 using System;
+using System.Net.Sockets;
+using System.Net;
 
 namespace SnailMailProtocol
 {
@@ -45,5 +47,66 @@ namespace SnailMailProtocol
             stream.Write(buffer);
         }
     }
+    public class SMAddress
+    {
+        private bool isDirty = true;
 
+        public IPAddress Address
+        {
+            set
+            {
+                address = value;
+                isDirty = true;
+            }
+            get
+            {
+                return address;
+            }
+        }
+        private IPAddress address;
+
+        public string Username
+        {
+            set
+            {
+                username = value;
+                isDirty = true;
+            }
+        }
+        
+        private string username;
+
+        public string Data
+        {
+            get
+            {
+                if (isDirty)
+                {
+                    data = $"{address.ToString()}:{username}";
+                    isDirty = false;
+                }
+                return data;
+            }
+        }
+        private string data;
+
+
+        public SMAddress(IPAddress addr, string username)
+        {
+            Address = addr;
+            Username = username;
+        }
+        public SMAddress(string fullAddr)
+        {
+            string[] addrs = fullAddr.Split(':');
+            Address = IPAddress.Parse(addrs[0]);
+            if(addrs.Length > 1)
+            {
+                Username = addrs[1];
+            }
+            
+        }
+
+
+    }
 }

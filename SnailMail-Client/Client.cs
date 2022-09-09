@@ -15,24 +15,17 @@ namespace SnailMail_Client
 {
     class Client
     {
-        static ProgressBar progressBar;
+
         static async Task sending(ListViewItemEventArgs args, SnailMailClient client)
         {
             OpenDialog dialog = new OpenDialog("Open a file", "Select a file");
-
+            
             Application.Run(dialog);
-            progressBar = new ProgressBar()
-            {
-                Width = 20,
-                Height = 10,
-                X = Pos.Center(),
-                Y = Pos.Center(),
-
-            };
+            
             
             Progress<float> progress = new Progress<float>((float a) =>
             {
-                Application.MainLoop.Invoke(() => progressBar.Fraction = a);
+
             });
             await Task.Run(async () =>
             {
@@ -43,13 +36,11 @@ namespace SnailMail_Client
                     string[] paths = dialog.FilePaths[0].Split('\\');
                     string ip = args.Value.ToString();
 
-                    Application.MainLoop.Invoke(() => Application.Top.Add(progressBar));
                     
-                    progressBar.SetFocus();
                     await client.Send(dialog.FilePaths[0], ip, progress, noKey);
                     
                     //while (progressBar.Fraction < 1) ;
-                    Application.MainLoop.Invoke(() => Application.Top.Remove(progressBar));
+                    //Application.MainLoop.Invoke(() => Application.Top.Remove(progressBar));
                                   
                 }
 
@@ -104,18 +95,21 @@ namespace SnailMail_Client
                 string input = field.Text.ToString();
                 field.Text = "";
                 bool created = false;
-                
-                if(System.Net.IPAddress.TryParse(input, out _))
+
+
+                SMAddress address;
+                try
                 {
+                    address = new SMAddress(input);
                     if (!File.Exists("AddressBook.txt"))
                     {
                         created = true;
                         File.Create("AddressBook.txt").Close();
                     }
-                    
+
                     string[] addresses = getAddresses();
 
-                    using (FileStream fs = File.Open("AddressBook.txt", FileMode.Append)) 
+                    using (FileStream fs = File.Open("AddressBook.txt", FileMode.Append))
                     using (StreamWriter stream = new StreamWriter(fs))
                     {
                         if (!addresses.Contains(input))
@@ -127,13 +121,20 @@ namespace SnailMail_Client
                         {
                             MessageBox.Query("", "Address already existed", "Ok");
                         }
-                        
+
                     }
                 }
-                else if(created)
+                catch(FormatException ex)
                 {
-                    File.Delete("AddressBook.txt");
+
+                    if (created)
+                    {
+                        File.Delete("AddressBook.txt");
+                    }
+                    
                 }
+
+                
 
             }
         }

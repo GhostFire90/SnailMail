@@ -158,7 +158,7 @@ namespace SnailMailProtocol
         public async Task Send(string path, string reciever, IProgress<float> progress, NoKey noKey)
         {
             SMHelpers.SendSCode(stream, ServerCodes.ClientSend);
-            string dir = $".keys/{reciever}/";
+            string dir = $".keys/{reciever.Replace(':', '\\')}/";
             if (!Directory.Exists(".keys")) Directory.CreateDirectory(".keys");
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
@@ -296,62 +296,70 @@ namespace SnailMailProtocol
                 throw new Exception("Unknown code for this opperation");
             }
 
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
+            code = SMHelpers.ReceiveOCode(stream);
 
-            FileStream keyStream = File.OpenRead($"private.key");
-
-            byte[] keyBuffer = new byte[keyStream.Length];
-            keyStream.Read(keyBuffer, 0, keyBuffer.Length);
-
-            rsa.ImportRSAPrivateKey(keyBuffer, out _);
-            keyStream.Close();
-
-            using (FileStream inFs = File.Open(exitDir, FileMode.Open))
+            if(code == OperationCodes.YesKey)
             {
-                byte[] ivLenghth = new byte[4];
-                inFs.Read(ivLenghth, 0, 4);
+                RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
 
-                byte[] iv = new byte[BitConverter.ToInt32(ivLenghth)];
-                inFs.Read(iv, 0, iv.Length);
+                FileStream keyStream = File.OpenRead($"private.key");
 
+                byte[] keyBuffer = new byte[keyStream.Length];
+                keyStream.Read(keyBuffer, 0, keyBuffer.Length);
 
-                byte[] keyLength = new byte[4];
-                inFs.Read(keyLength, 0, 4);
+                rsa.ImportRSAPrivateKey(keyBuffer, out _);
+                keyStream.Close();
 
-                byte[] keyEncrypted = new byte[BitConverter.ToInt32(keyLength)];
-                inFs.Read(keyEncrypted, 0, keyEncrypted.Length);
-
-                byte[] keyDecrypted = rsa.Decrypt(keyEncrypted, true);
-
-                Aes aes = Aes.Create();
-
-                aes.Key = keyDecrypted;
-                aes.KeySize = BitConverter.ToInt32(keyLength);
-
-                aes.IV = iv;
-
-                ICryptoTransform transform = aes.CreateDecryptor(keyDecrypted, iv);
-
-                string correctFile = exitDir.Substring(0, exitDir.Length - 4);
-                using (FileStream outFs = File.Open(correctFile, FileMode.OpenOrCreate))
+                using (FileStream inFs = File.Open(exitDir, FileMode.Open))
                 {
-                    using (CryptoStream outDec = new CryptoStream(outFs, transform, CryptoStreamMode.Write))
+                    byte[] ivLenghth = new byte[4];
+                    inFs.Read(ivLenghth, 0, 4);
+
+                    byte[] iv = new byte[BitConverter.ToInt32(ivLenghth)];
+                    inFs.Read(iv, 0, iv.Length);
+
+
+                    byte[] keyLength = new byte[4];
+                    inFs.Read(keyLength, 0, 4);
+
+                    byte[] keyEncrypted = new byte[BitConverter.ToInt32(keyLength)];
+                    inFs.Read(keyEncrypted, 0, keyEncrypted.Length);
+
+                    byte[] keyDecrypted = rsa.Decrypt(keyEncrypted, true);
+
+                    Aes aes = Aes.Create();
+
+                    aes.Key = keyDecrypted;
+                    aes.KeySize = BitConverter.ToInt32(keyLength);
+
+                    aes.IV = iv;
+
+                    ICryptoTransform transform = aes.CreateDecryptor(keyDecrypted, iv);
+
+                    string correctFile = exitDir.Substring(0, exitDir.Length - 4);
+                    using (FileStream outFs = File.Open(correctFile, FileMode.OpenOrCreate))
                     {
-                        int bytesRead = 0;
-                        byte[] buffer = new byte[aes.BlockSize];
-
-                        while ((bytesRead = inFs.Read(buffer, 0, aes.BlockSize)) != 0)
+                        using (CryptoStream outDec = new CryptoStream(outFs, transform, CryptoStreamMode.Write))
                         {
-                            outDec.Write(buffer, 0, bytesRead);
+                            int bytesRead = 0;
+                            byte[] buffer = new byte[aes.BlockSize];
+
+                            while ((bytesRead = inFs.Read(buffer, 0, aes.BlockSize)) != 0)
+                            {
+                                outDec.Write(buffer, 0, bytesRead);
+                            }
+                            outDec.FlushFinalBlock();
+
                         }
-                        outDec.FlushFinalBlock();
-
                     }
-                }
 
+                }
+                File.Delete(exitDir);
+                
             }
-            File.Delete(exitDir);
+            
             return "";
+
         }
 
         /// <summary>

@@ -86,7 +86,7 @@ namespace SnailMailProtocol
 
             string inbox = Encoding.UTF8.GetString(inboxBuffer);
 
-            if (File.Exists($"{inbox}/public.key"))
+            if (File.Exists($"{inbox.Replace(":", "\\")}/public.key"))
             {
                 SMHelpers.SendOCode(stream, OperationCodes.YesKey);
                 //stream.Write(BitConverter.GetBytes((int)OperationCodes.YesKey));
@@ -103,7 +103,7 @@ namespace SnailMailProtocol
                 }
                 else if (code == OperationCodes.ContinueSend)
                 {
-                    string exitDir = BFTP.Recieve(stream, 256, $"{inbox}/");
+                    string exitDir = BFTP.Recieve(stream, 256, $"{inbox.Replace(":", "\\")}/");
                 }
                 else
                 {
@@ -134,15 +134,19 @@ namespace SnailMailProtocol
 
             string fileName = Encoding.UTF8.GetString(fileNameBytes);
             FileInfo fileInfo;
+
+            bool key = false;
             if (File.Exists($"{dir}{fileName}"))
             {
-                stream.Write(BitConverter.GetBytes((int)OperationCodes.NoKey));
+                //stream.Write(BitConverter.GetBytes((int)OperationCodes.NoKey));
+                key = false;
                 fileInfo = new FileInfo($"{dir}{fileName}");
 
             }
             else
             {
-                stream.Write(BitConverter.GetBytes((int)OperationCodes.NoKey));
+                //stream.Write(BitConverter.GetBytes((int)OperationCodes.NoKey));
+                key = true;
                 fileInfo = new FileInfo($"{dir}{fileName}.crp");
             }
 
@@ -153,7 +157,8 @@ namespace SnailMailProtocol
             TimeSpan howLong = DateTime.Now.Subtract(creation);
             if (howLong.TotalDays >= days)
             {
-                SMHelpers.SendOCode(stream, OperationCodes.WaitTimeOver);            }
+                SMHelpers.SendOCode(stream, OperationCodes.WaitTimeOver);            
+            }
             else
             {
                 SMHelpers.SendOCode(stream, OperationCodes.WaitTime);
@@ -184,6 +189,8 @@ namespace SnailMailProtocol
                 return;
             }
 
+            SMHelpers.SendOCode(stream, key ? OperationCodes.YesKey : OperationCodes.NoKey);
+            
 
         }
 
